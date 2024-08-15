@@ -4,14 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Server Status</title>
-    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-database.js"></script>
   </head>
   <body>
-    <h1>Server Status: <span id="status">Loading...</span></h1>
+    <h1>Server Status:</h1>
+    <div id="servers">Loading...</div>
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-analytics.js";
+      import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
       const firebaseConfig = {
         apiKey: "AIzaSyBwfCZpCKMutYNz7t7ipKF6_XaCnpTH4ok",
         authDomain: "funnydev-servers.firebaseapp.com",
@@ -20,20 +20,28 @@
         messagingSenderId: "384548570568",
         appId: "1:384548570568:web:15edc540838ec05011ecfd",
         measurementId: "G-KZ895HNPXQ",
-        databaseURL: "https://funnydev-servers.firebaseio.com"
+        databaseURL: "https://funnydev-servers-default-rtdb.asia-southeast1.firebasedatabase.app/"
       };
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
-      const database = firebase.database();
-      const serversDiv = document.getElementById('servers');
-      database.ref('/servers').on('value', (snapshot) => {
-        const servers = snapshot.val();
+      const db = getFirestore(app);
+      async function loadServerStatus() {
+        const querySnapshot = await getDocs(collection(db, "servers"));
+        const serversDiv = document.getElementById('servers');
         serversDiv.innerHTML = '';
-        for (const serverName in servers) {
-          const status = servers[serverName].status;
-          serversDiv.innerHTML += `<p>${serverName}: ${status.toUpperCase()}</p>`;
-        }
-      });
+        querySnapshot.forEach((doc) => {
+          const data = doc.data();
+          for (const serverName in data) {
+            const status = data[serverName].toUpperCase();
+            if (status == 'OFFLINE') {
+              serversDiv.innerHTML += `<p>${serverName}: <span style="color: red">OFFLINE</span></p>`;
+            } else {
+              serversDiv.innerHTML += `<p>${serverName}: <span style="color: green">ONLINE</span></p>`;
+            }
+          }
+        });
+      }
+      loadServerStatus();
     </script>
   </body>
 </html>
