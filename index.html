@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Server Status</title>
+    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-database.js"></script>
+  </head>
+  <body>
+    <h1>Server Status: <span id="status">Loading...</span></h1>
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-analytics.js";
+      const firebaseConfig = {
+        apiKey: "AIzaSyBwfCZpCKMutYNz7t7ipKF6_XaCnpTH4ok",
+        authDomain: "funnydev-servers.firebaseapp.com",
+        projectId: "funnydev-servers",
+        storageBucket: "funnydev-servers.appspot.com",
+        messagingSenderId: "384548570568",
+        appId: "1:384548570568:web:15edc540838ec05011ecfd",
+        measurementId: "G-KZ895HNPXQ"
+      };
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const database = firebase.database();
+      database.ref('/serverStatus').on('value', (snapshot) => {
+        const status = snapshot.val().status;
+        document.getElementById('status').innerText = status.toUpperCase();
+      });
+    </script>
+  </body>
+</html>
