@@ -19,14 +19,20 @@
         storageBucket: "funnydev-servers.appspot.com",
         messagingSenderId: "384548570568",
         appId: "1:384548570568:web:15edc540838ec05011ecfd",
-        measurementId: "G-KZ895HNPXQ"
+        measurementId: "G-KZ895HNPXQ",
+        databaseURL: "https://funnydev-servers.firebaseio.com"
       };
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
       const database = firebase.database();
-      database.ref('/serverStatus').on('value', (snapshot) => {
-        const status = snapshot.val().status;
-        document.getElementById('status').innerText = status.toUpperCase();
+      const serversDiv = document.getElementById('servers');
+      database.ref('/servers').on('value', (snapshot) => {
+        const servers = snapshot.val();
+        serversDiv.innerHTML = '';
+        for (const serverName in servers) {
+          const status = servers[serverName].status;
+          serversDiv.innerHTML += `<p>${serverName}: ${status.toUpperCase()}</p>`;
+        }
       });
     </script>
   </body>
