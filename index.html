@@ -11,7 +11,7 @@
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
       import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-analytics.js";
-      import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+      import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
       const firebaseConfig = {
         apiKey: "AIzaSyBwfCZpCKMutYNz7t7ipKF6_XaCnpTH4ok",
         authDomain: "funnydev-servers.firebaseapp.com",
@@ -24,24 +24,26 @@
       };
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
-      const db = getFirestore(app);
-      async function loadServerStatus() {
-        const querySnapshot = await getDocs(collection(db, "servers"));
+      const database = getDatabase(app);
+      const serversRef = ref(database, 'servers');
+      onValue(serversRef, (snapshot) => {
+        const servers = snapshot.val();
+        const currentTime = Math.floor(Date.now() / 1000);
         const serversDiv = document.getElementById('servers');
-        serversDiv.innerHTML = '';
-        querySnapshot.forEach((doc) => {
-          const data = doc.data();
-          for (const serverName in data) {
-            const status = data[serverName].toUpperCase();
-            if (status == 'OFFLINE') {
-              serversDiv.innerHTML += `<p>${serverName}: <span style="color: red">OFFLINE</span></p>`;
-            } else {
-              serversDiv.innerHTML += `<p>${serverName}: <span style="color: green">ONLINE</span></p>`;
-            }
+        serversDiv.innerHTML = '';  // Xóa nội dung hiện tại
+        for (const serverName in servers) {
+          let status = servers[serverName]['status'];
+          let lastUpdated = servers[serverName]['timestamps'];
+          if ((status == 'ONLINE') && (currentTime - lastUpdated > 300)) {
+            status = 'OFFLINE';
           }
-        });
-      }
-      loadServerStatus();
+          const color = {
+            'ONLINE': 'green',
+            'OFFLINE': 'red'
+          }
+          serversDiv.innerHTML += `<p>${serverName}: <span style="color: ${color[status]}">${status.toUpperCase()}</span></p>`;
+        }
+      });
     </script>
   </body>
 </html>
